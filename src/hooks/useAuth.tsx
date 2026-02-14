@@ -54,21 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      let profile: User | null = null;
-      if (session?.user) {
-        profile = await fetchProfile(
-          session.user.id,
-          session.user.email!,
-          session.user.user_metadata?.full_name
-        );
-      }
-      if (mounted) {
-        setState({ user: session?.user ?? null, profile, session, loading: false });
-      }
-    });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -90,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // On sign in / initial session, fetch profile
+      // INITIAL_SESSION, SIGNED_IN, USER_UPDATED — fetch profile
       let profile: User | null = null;
       if (session?.user) {
         profile = await fetchProfile(

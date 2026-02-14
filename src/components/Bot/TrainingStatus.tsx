@@ -19,8 +19,8 @@ const statusProgress: Record<string, number> = {
 const statusIcons: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4" />,
   training: <Loader2 className="h-4 w-4 animate-spin" />,
-  ready: <CheckCircle className="h-4 w-4 text-green-600" />,
-  error: <AlertCircle className="h-4 w-4 text-red-600" />,
+  ready: <CheckCircle className="h-4 w-4 text-green-400" />,
+  error: <AlertCircle className="h-4 w-4 text-red-400" />,
 };
 
 export function TrainingStatus({ bot }: TrainingStatusProps) {
