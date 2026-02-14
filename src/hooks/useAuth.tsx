@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/services/supabaseClient";
-import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import type { User as SupabaseUser, Session, AuthResponse, AuthTokenResponsePassword } from "@supabase/supabase-js";
 import type { User } from "@/types";
 
 interface AuthState {
@@ -11,8 +11,8 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  signUp: (email: string, password: string, fullName: string) => Promise<ReturnType<typeof supabase.auth.signUp>["data"]>;
-  signIn: (email: string, password: string) => Promise<ReturnType<typeof supabase.auth.signInWithPassword>["data"]>;
+  signUp: (email: string, password: string, fullName: string) => Promise<Awaited<AuthResponse>["data"]>;
+  signIn: (email: string, password: string) => Promise<Awaited<AuthTokenResponsePassword>["data"]>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (updates: Partial<Pick<User, "full_name">>) => Promise<void>;

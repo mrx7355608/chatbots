@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --config vite.config.widget.ts && cp dist-widget/widget.js dist/widget.js",
+    "build:widget": "vite build --config vite.config.widget.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },

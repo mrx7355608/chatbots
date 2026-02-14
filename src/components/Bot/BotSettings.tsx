@@ -69,7 +69,7 @@ export function BotSettings({ bot, onUpdate, onDelete }: BotSettingsProps) {
             required
           />
         </div>
-        <Button type="submit" disabled={saving}>
+        <Button type="submit" disabled={saving} className="cursor-pointer">
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Changes
         </Button>
@@ -83,7 +83,7 @@ export function BotSettings({ bot, onUpdate, onDelete }: BotSettingsProps) {
           Deleting this bot will permanently remove it and all associated data.
           This action cannot be undone.
         </p>
-        <Button variant="destructive" onClick={onDelete}>
+        <Button variant="destructive" onClick={onDelete} className="cursor-pointer">
           Delete Bot
         </Button>
       </div>

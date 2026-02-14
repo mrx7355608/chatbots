@@ -23,6 +23,11 @@ export interface Bot {
   n8n_workflow_id: string | null;
   total_pages_scraped: number;
   embedding_status: EmbeddingStatus;
+  widget_header_color: string | null;
+  widget_user_bubble_color: string | null;
+  widget_bot_bubble_color: string | null;
+  widget_display_name: string | null;
+  widget_avatar_url: string | null;
 }
 
 export interface BotAnalytics {

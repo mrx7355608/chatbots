@@ -59,9 +59,34 @@ export async function deleteBot(botId: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function uploadBotAvatar(botId: string, file: File): Promise<string> {
+  const ext = file.name.split(".").pop() ?? "png";
+  const path = `${botId}/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("bot-avatars")
+    .upload(path, file, { upsert: true });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from("bot-avatars").getPublicUrl(path);
+  return data.publicUrl;
+}
+
 export async function updateBot(
   botId: string,
-  updates: Partial<Pick<Bot, "name" | "website_url">>
+  updates: Partial<
+    Pick<
+      Bot,
+      | "name"
+      | "website_url"
+      | "widget_header_color"
+      | "widget_user_bubble_color"
+      | "widget_bot_bubble_color"
+      | "widget_display_name"
+      | "widget_avatar_url"
+    >
+  >
 ): Promise<Bot> {
   const { data, error } = await supabase
     .from("bots")
@@ -79,10 +104,6 @@ function generateIntegrationCode(botId: string): string {
     import.meta.env.VITE_CHAT_WIDGET_URL ?? "https://yourdomain.com/widget.js";
   return `<script src="${widgetUrl}"></script>
 <script>
-  ChatBot.init({
-    botId: '${botId}',
-    position: 'bottom-right',
-    theme: 'light'
-  });
+  ChatBot.init({ botId: '${botId}' });
 </script>`;
 }

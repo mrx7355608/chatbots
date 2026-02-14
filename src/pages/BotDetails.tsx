@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/Common/DashboardLayout";
 import { TrainingStatus } from "@/components/Bot/TrainingStatus";
 import { IntegrationCode } from "@/components/Bot/IntegrationCode";
 import { BotSettings } from "@/components/Bot/BotSettings";
+import { WidgetCustomization } from "@/components/Bot/WidgetCustomization";
 import { ChatTab } from "@/components/Bot/ChatTab";
 import { useBot } from "@/hooks/useBots";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,11 +29,11 @@ export default function BotDetails() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { bot, setBot, loading, error, refetch } = useBot(botId!);
+  const { bot, setBot, loading, error } = useBot(botId!);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
 
-  const validTabs = ["overview", "chat", "integration", "settings"] as const;
+  const validTabs = ["overview", "chat", "widget", "integration", "settings"] as const;
   type TabValue = (typeof validTabs)[number];
   const tabFromUrl = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<TabValue>(
@@ -108,11 +109,22 @@ export default function BotDetails() {
   };
 
   const handleUpdate = async (
-    updates: Partial<Pick<Bot, "name" | "website_url">>
+    updates: Partial<
+      Pick<
+        Bot,
+        | "name"
+        | "website_url"
+        | "widget_header_color"
+        | "widget_user_bubble_color"
+        | "widget_bot_bubble_color"
+        | "widget_display_name"
+        | "widget_avatar_url"
+      >
+    >
   ) => {
     if (!bot) return;
-    await botService.updateBot(bot.id, updates);
-    refetch();
+    const updated = await botService.updateBot(bot.id, updates);
+    setBot(updated);
   };
 
   const handleDelete = async () => {
@@ -202,6 +214,7 @@ export default function BotDetails() {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="widget">Widget</TabsTrigger>
             <TabsTrigger value="integration">Integration</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -250,6 +263,17 @@ export default function BotDetails() {
 
           <TabsContent value="chat" className="mt-6">
             <ChatTab botId={bot.id} />
+          </TabsContent>
+
+          <TabsContent value="widget" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Widget Appearance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <WidgetCustomization bot={bot} onUpdate={handleUpdate} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="integration" className="mt-6">
