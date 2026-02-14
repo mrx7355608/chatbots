@@ -11,7 +11,9 @@ export function useBots() {
   const fetchBots = useCallback(async () => {
     try {
       // Only show loading skeleton on initial fetch
+      console.log("Fetching initial")
       if (!hasFetched.current) setLoading(true);
+      console.log("Fetching twice")
       setError(null);
       const data = await botService.getBots();
       setBots(data);
