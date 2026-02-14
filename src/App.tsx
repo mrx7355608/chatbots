@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
@@ -11,6 +12,7 @@ import Settings from "@/pages/Settings";
 
 function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
@@ -58,6 +60,7 @@ function App() {
       </Routes>
       <Toaster />
     </BrowserRouter>
+    </AuthProvider>
   );
 }
 

@@ -1,9 +1,11 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/Common/DashboardLayout";
 import { TrainingStatus } from "@/components/Bot/TrainingStatus";
 import { IntegrationCode } from "@/components/Bot/IntegrationCode";
 import { BotSettings } from "@/components/Bot/BotSettings";
+import { ChatTab } from "@/components/Bot/ChatTab";
 import { useBot } from "@/hooks/useBots";
+import { useAuth } from "@/hooks/useAuth";
 import type { Bot } from "@/types";
 import * as botService from "@/services/botService";
 import { triggerBotTraining, triggerBotRetrain } from "@/services/n8nService";
@@ -19,41 +21,87 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function BotDetails() {
   const { botId } = useParams<{ botId: string }>();
   const navigate = useNavigate();
-  const { bot, loading, error, refetch } = useBot(botId!);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const { bot, setBot, loading, error, refetch } = useBot(botId!);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
 
+  const validTabs = ["overview", "chat", "integration", "settings"] as const;
+  type TabValue = (typeof validTabs)[number];
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<TabValue>(
+    validTabs.includes(tabFromUrl as TabValue)
+      ? (tabFromUrl as TabValue)
+      : "overview"
+  );
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as TabValue);
+    setSearchParams({ tab: value }, { replace: true });
+  };
+
+  const buildIntegrationTabUrl = (id: string) =>
+    `${window.location.origin}/bot/${id}?tab=integration`;
+
   const handleTrain = async () => {
-    if (!bot) return;
+    if (!bot || !user?.email) return;
+    if (bot.status === "training") {
+      toast("Training is already in progress.");
+      return;
+    }
     setActionLoading(true);
     setActionError("");
     try {
-      await triggerBotTraining(bot.id, bot.website_url);
-      refetch();
+      await triggerBotTraining({
+        botId: bot.id,
+        websiteUrl: bot.website_url,
+        userEmail: user.email,
+        botName: bot.name,
+        integrationTabUrl: buildIntegrationTabUrl(bot.id),
+      });
+      setBot({ ...bot, status: "training" });
+      toast("Training started", {
+        description: `We'll email ${user.email} when "${bot.name}" is ready.`,
+      });
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : "Failed to start training"
-      );
+      const msg = err instanceof Error ? err.message : "Failed to start training";
+      setActionError(msg);
+      toast(msg);
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleRetrain = async () => {
-    if (!bot) return;
+    if (!bot || !user?.email) return;
+    if (bot.status === "training") {
+      toast("Training is already in progress.");
+      return;
+    }
     setActionLoading(true);
     setActionError("");
     try {
-      await triggerBotRetrain(bot.id, bot.website_url);
-      refetch();
+      await triggerBotRetrain({
+        botId: bot.id,
+        websiteUrl: bot.website_url,
+        userEmail: user.email,
+        botName: bot.name,
+        integrationTabUrl: buildIntegrationTabUrl(bot.id),
+      });
+      setBot({ ...bot, status: "training" });
+      toast("Retraining started", {
+        description: `We'll email ${user.email} when "${bot.name}" is ready.`,
+      });
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : "Failed to start retraining"
-      );
+      const msg = err instanceof Error ? err.message : "Failed to start retraining";
+      setActionError(msg);
+      toast(msg);
     } finally {
       setActionLoading(false);
     }
@@ -125,13 +173,14 @@ export default function BotDetails() {
           </div>
           <div className="flex gap-2">
             {bot.status === "pending" && (
-              <Button onClick={handleTrain} disabled={actionLoading}>
+              <Button className="cursor-pointer" onClick={handleTrain} disabled={actionLoading}>
                 <Play className="mr-2 h-4 w-4" />
                 Train Bot
               </Button>
             )}
             {bot.status === "ready" && (
               <Button
+                className="cursor-pointer"
                 variant="outline"
                 onClick={handleRetrain}
                 disabled={actionLoading}
@@ -149,9 +198,10 @@ export default function BotDetails() {
           </Alert>
         )}
 
-        <Tabs defaultValue="overview">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="integration">Integration</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -196,6 +246,10 @@ export default function BotDetails() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            <ChatTab botId={bot.id} />
           </TabsContent>
 
           <TabsContent value="integration" className="mt-6">

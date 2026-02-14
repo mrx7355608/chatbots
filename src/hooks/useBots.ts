@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Bot, CreateBotInput } from "@/types";
 import * as botService from "@/services/botService";
 
@@ -6,13 +6,16 @@ export function useBots() {
   const [bots, setBots] = useState<Bot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   const fetchBots = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show loading skeleton on initial fetch
+      if (!hasFetched.current) setLoading(true);
       setError(null);
       const data = await botService.getBots();
       setBots(data);
+      hasFetched.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch bots");
     } finally {
@@ -51,13 +54,16 @@ export function useBot(botId: string) {
   const [bot, setBot] = useState<Bot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   const fetchBot = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show loading skeleton on initial fetch
+      if (!hasFetched.current) setLoading(true);
       setError(null);
       const data = await botService.getBot(botId);
       setBot(data);
+      hasFetched.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch bot");
     } finally {
@@ -69,5 +75,5 @@ export function useBot(botId: string) {
     fetchBot();
   }, [fetchBot]);
 
-  return { bot, loading, error, refetch: fetchBot };
+  return { bot, setBot, loading, error, refetch: fetchBot };
 }
