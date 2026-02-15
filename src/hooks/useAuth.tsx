@@ -54,12 +54,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Fetch initial session directly — more reliable than INITIAL_SESSION event
+    // which can be lost during React StrictMode remounts
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      let profile: User | null = null;
+      if (session?.user) {
+        profile = await fetchProfile(
+          session.user.id,
+          session.user.email!,
+          session.user.user_metadata?.full_name
+        );
+      }
+      if (mounted) {
+        setState({ user: session?.user ?? null, profile, session, loading: false });
+      }
+    });
+
+    // Listen for subsequent auth changes only
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
+      if (!mounted || event === "INITIAL_SESSION") return;
 
-      // On token refresh, just update the session/user without re-querying the profile
       if (event === "TOKEN_REFRESHED") {
         setState((prev) => ({
           ...prev,
@@ -69,13 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // On sign out, clear everything
       if (event === "SIGNED_OUT") {
         setState({ user: null, profile: null, session: null, loading: false });
         return;
       }
 
-      // INITIAL_SESSION, SIGNED_IN, USER_UPDATED — fetch profile
+      // SIGNED_IN, USER_UPDATED — fetch profile
       let profile: User | null = null;
       if (session?.user) {
         profile = await fetchProfile(
