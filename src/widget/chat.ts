@@ -157,15 +157,22 @@ export function createChat(
 
 // Simple markdown renderer (no dependencies)
 function renderMarkdown(text: string): string {
+  // Normalize: handle literal \n from API responses & Windows line endings
+  text = text.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+
   let html = escapeHtml(text);
 
-  // Code blocks (```...```)
-  html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.trim()}</code></pre>`);
+  // Preserve code blocks by replacing with placeholders
+  const codeBlocks: string[] = [];
+  html = html.replace(/```([\s\S]*?)```/g, (_, code) => {
+    codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
+    return `\x00CB${codeBlocks.length - 1}\x00`;
+  });
 
   // Inline code
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-  // Bold
+  // Bold (before italic so ** is matched first)
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
   // Italic
@@ -214,8 +221,14 @@ function renderMarkdown(text: string): string {
     })
     .join("");
 
-  // Single newlines to <br> (within paragraphs)
-  html = html.replace(/([^>])\n([^<])/g, "$1<br>$2");
+  // Single newlines to <br> — use a simple global replace, then clean up
+  html = html.replace(/\n/g, "<br>");
+  // Remove spurious <br> adjacent to block-level tags
+  html = html.replace(/<br>\s*(<\/?(ul|ol|li|pre|p|blockquote)>)/g, "$1");
+  html = html.replace(/(<\/?(ul|ol|li|pre|p|blockquote)>)\s*<br>/g, "$1");
+
+  // Restore code blocks
+  html = html.replace(/\x00CB(\d+)\x00/g, (_, i) => codeBlocks[Number(i)]);
 
   return html;
 }

@@ -4,6 +4,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.cb-messages p,
+.cb-messages li,
+.cb-messages strong {
+  line-height: 1.8;
+}
+
+.cb-messages ol, 
+.cb-messages ul {
+  padding-left: 16px;
+  margin: 8px 0;
+}
+
+.cb-messages li {
+  margin-bottom: 16px;
+}
+
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

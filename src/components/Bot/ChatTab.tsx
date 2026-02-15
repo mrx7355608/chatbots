@@ -64,13 +64,16 @@ const markdownComponents: ComponentProps<typeof Markdown>["components"] = {
     return null;
   },
   ul({ children }) {
-    return <ul className="my-1 ml-4 list-disc space-y-0.5">{children}</ul>;
+    return <ul className="my-2 ml-4 list-disc space-y-4">{children}</ul>;
   },
   ol({ children }) {
-    return <ol className="my-1 ml-4 list-decimal space-y-0.5">{children}</ol>;
+    return <ol className="my-2 ml-4 list-decimal space-y-4">{children}</ol>;
   },
   p({ children }) {
-    return <p className="my-1">{children}</p>;
+    return <p className="my-2">{children}</p>;
+  },
+  li({ children }) {
+    return <li className="leading-relaxed">{children}</li>;
   },
   code({ children }) {
     return <code className="rounded bg-background/50 px-1 py-0.5 text-xs">{children}</code>;
@@ -137,7 +140,12 @@ export function ChatTab({ botId }: { botId: string }) {
             </div>
             <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
               {msg.role === "bot" ? (
-                <Markdown components={markdownComponents}>{msg.content}</Markdown>
+                <Markdown components={markdownComponents}>
+                  {msg.content
+                    .replace(/\\n/g, "\n")       // literal \n from API → real newlines
+                    .replace(/\n(?!\n)/g, "  \n") // single newlines → markdown hard breaks
+                  }
+                </Markdown>
               ) : (
                 msg.content
               )}

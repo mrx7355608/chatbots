@@ -155,8 +155,10 @@ export function getStyles(): string {
     }
     .cb-msg a { color: inherit; text-decoration: underline; }
     .cb-msg a:hover { text-decoration: none; }
-    .cb-msg ul, .cb-msg ol { margin: 4px 0 4px 18px; }
-    .cb-msg p { margin: 4px 0; }
+    .cb-msg ul, .cb-msg ol { margin: 10px 0 10px 18px; }
+    .cb-msg li { margin-bottom: 10px; }
+    .cb-msg li:last-child { margin-bottom: 0; }
+    .cb-msg p { margin: 8px 0; }
     .cb-msg p:first-child { margin-top: 0; }
     .cb-msg p:last-child { margin-bottom: 0; }
     .cb-msg code {
