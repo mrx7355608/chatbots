@@ -13,9 +13,7 @@ export default defineConfig(({ mode }) => {
     define: {
       __WIDGET_SUPABASE_URL__: JSON.stringify(env.VITE_SUPABASE_URL ?? ""),
       __WIDGET_SUPABASE_ANON_KEY__: JSON.stringify(env.VITE_SUPABASE_ANON_KEY ?? ""),
-      __WIDGET_WEBHOOK_URL__: JSON.stringify(
-        env.VITE_CHAT_API_URL ?? "https://n8n.fawad.live/webhook/message-bot"
-      ),
+      __WIDGET_WEBHOOK_URL__: JSON.stringify(env.VITE_N8N_WEBHOOK_MESSAGING ?? ""),
     },
     build: {
       lib: {

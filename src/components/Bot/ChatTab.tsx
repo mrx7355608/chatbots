@@ -9,7 +9,7 @@ interface Message {
   content: string;
 }
 
-const WEBHOOK_URL = "https://n8n.fawad.live/webhook/message-bot";
+const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_MESSAGING ?? "";
 const IMAGE_RE = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
 
 function ImageLightbox({ src, alt }: { src: string; alt: string }) {
@@ -88,6 +88,7 @@ export function ChatTab({ botId }: { botId: string }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -105,7 +106,7 @@ export function ChatTab({ botId }: { botId: string }) {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ botId, message: text }),
+        body: JSON.stringify({ botId, sessionId: sessionIdRef.current, message: text }),
       });
 
       if (!res.ok) throw new Error("Request failed");

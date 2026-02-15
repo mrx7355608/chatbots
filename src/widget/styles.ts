@@ -31,7 +31,6 @@ export function getStyles(): string {
       box-shadow: 0 6px 16px rgba(0,0,0,0.2);
     }
     .cb-toggle.bottom-right { bottom: 20px; right: 20px; }
-    .cb-toggle.bottom-left { bottom: 20px; left: 20px; }
 
     .cb-toggle svg {
       width: 24px;
@@ -62,7 +61,6 @@ export function getStyles(): string {
       pointer-events: auto;
     }
     .cb-window.bottom-right { bottom: 88px; right: 20px; }
-    .cb-window.bottom-left { bottom: 88px; left: 20px; }
 
     @media (max-width: 440px) {
       .cb-window {

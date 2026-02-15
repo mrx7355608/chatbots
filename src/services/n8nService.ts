@@ -1,4 +1,4 @@
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL ?? "";
+const TRAINING_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_TRAINING ?? "";
 
 export interface TrainingWebhookParams {
   botId: string;
@@ -9,7 +9,7 @@ export interface TrainingWebhookParams {
 }
 
 export async function triggerBotTraining(params: TrainingWebhookParams) {
-  const res = await fetch(`${N8N_WEBHOOK_URL}/train-bot`, {
+  const res = await fetch(TRAINING_WEBHOOK_URL, {
     method: "POST",
     body: new URLSearchParams({
       botId: params.botId,
@@ -20,23 +20,4 @@ export async function triggerBotTraining(params: TrainingWebhookParams) {
     }),
   });
   if (!res.ok) throw new Error("Failed to start training");
-}
-
-export async function triggerBotRetrain(params: TrainingWebhookParams) {
-  const res = await fetch(`${N8N_WEBHOOK_URL}/retrain-bot`, {
-    method: "POST",
-    body: new URLSearchParams({
-      botId: params.botId,
-      websiteUrl: params.websiteUrl,
-      userEmail: params.userEmail,
-      botName: params.botName,
-      integrationTabUrl: params.integrationTabUrl,
-    }),
-  });
-  if (!res.ok) throw new Error("Failed to start retraining");
-}
-
-export async function getBotTrainingStatus(botId: string) {
-  const response = await fetch(`${N8N_WEBHOOK_URL}/bot-status/${botId}`);
-  return response;
 }

@@ -33,12 +33,13 @@ export async function fetchWidgetConfig(botId: string): Promise<WidgetTheme> {
 
 export async function sendMessage(
   botId: string,
+  sessionId: string,
   message: string
 ): Promise<string> {
   const res = await fetch(WEBHOOK_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ botId, message }),
+    body: JSON.stringify({ botId, sessionId, message }),
   });
 
   if (!res.ok) throw new Error("Failed to send message");

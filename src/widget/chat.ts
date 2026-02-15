@@ -8,10 +8,10 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
 export function createChat(
   root: ShadowRoot,
   botId: string,
-  theme: WidgetTheme,
-  position: "bottom-right" | "bottom-left"
+  theme: WidgetTheme
 ) {
   const messages: WidgetMessage[] = [];
+  const sessionId = crypto.randomUUID();
   let isOpen = false;
   let sending = false;
 
@@ -28,14 +28,14 @@ export function createChat(
 
   // Toggle button
   const toggle = document.createElement("button");
-  toggle.className = `cb-toggle ${position}`;
+  toggle.className = "cb-toggle bottom-right";
   toggle.innerHTML = CHAT_ICON;
   toggle.setAttribute("aria-label", "Open chat");
   root.appendChild(toggle);
 
   // Chat window
   const win = document.createElement("div");
-  win.className = `cb-window ${position}`;
+  win.className = "cb-window bottom-right";
   win.innerHTML = `
     <div class="cb-header">
       ${
@@ -113,7 +113,7 @@ export function createChat(
     scrollToBottom();
 
     try {
-      const reply = await sendMessage(botId, text);
+      const reply = await sendMessage(botId, sessionId, text);
       messages.push({ role: "bot", content: reply });
       typing.remove();
       appendMessage("bot", reply);

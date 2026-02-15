@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Bot, CreateBotInput } from "@/types";
 import * as botService from "@/services/botService";
+import { supabase } from "@/services/supabaseClient";
 
 export function useBots() {
   const [bots, setBots] = useState<Bot[]>([]);
@@ -10,10 +11,7 @@ export function useBots() {
 
   const fetchBots = useCallback(async () => {
     try {
-      // Only show loading skeleton on initial fetch
-      console.log("Fetching initial")
       if (!hasFetched.current) setLoading(true);
-      console.log("Fetching twice")
       setError(null);
       const data = await botService.getBots();
       setBots(data);
@@ -28,6 +26,33 @@ export function useBots() {
   useEffect(() => {
     fetchBots();
   }, [fetchBots]);
+
+  // Realtime subscription for bot updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("bots-list")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "bots" },
+        (payload) => {
+          setBots((prev) =>
+            prev.map((b) => (b.id === payload.new.id ? (payload.new as Bot) : b))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "bots" },
+        (payload) => {
+          setBots((prev) => prev.filter((b) => b.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const createBot = async (input: CreateBotInput) => {
     const bot = await botService.createBot(input);
@@ -60,7 +85,6 @@ export function useBot(botId: string) {
 
   const fetchBot = useCallback(async () => {
     try {
-      // Only show loading skeleton on initial fetch
       if (!hasFetched.current) setLoading(true);
       setError(null);
       const data = await botService.getBot(botId);
@@ -76,6 +100,29 @@ export function useBot(botId: string) {
   useEffect(() => {
     fetchBot();
   }, [fetchBot]);
+
+  // Realtime subscription for this specific bot
+  useEffect(() => {
+    const channel = supabase
+      .channel(`bot-${botId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "bots",
+          filter: `id=eq.${botId}`,
+        },
+        (payload) => {
+          setBot(payload.new as Bot);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [botId]);
 
   return { bot, setBot, loading, error, refetch: fetchBot };
 }

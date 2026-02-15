@@ -9,7 +9,7 @@ import { useBot } from "@/hooks/useBots";
 import { useAuth } from "@/hooks/useAuth";
 import type { Bot } from "@/types";
 import * as botService from "@/services/botService";
-import { triggerBotTraining, triggerBotRetrain } from "@/services/n8nService";
+import { triggerBotTraining } from "@/services/n8nService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   ExternalLink,
   Play,
-  RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -66,7 +65,6 @@ export default function BotDetails() {
         botName: bot.name,
         integrationTabUrl: buildIntegrationTabUrl(bot.id),
       });
-      setBot({ ...bot, status: "training" });
       toast("Training started", {
         description: `We'll email ${user.email} when "${bot.name}" is ready.`,
       });
@@ -79,34 +77,6 @@ export default function BotDetails() {
     }
   };
 
-  const handleRetrain = async () => {
-    if (!bot || !user?.email) return;
-    if (bot.status === "training") {
-      toast("Training is already in progress.");
-      return;
-    }
-    setActionLoading(true);
-    setActionError("");
-    try {
-      await triggerBotRetrain({
-        botId: bot.id,
-        websiteUrl: bot.website_url,
-        userEmail: user.email,
-        botName: bot.name,
-        integrationTabUrl: buildIntegrationTabUrl(bot.id),
-      });
-      setBot({ ...bot, status: "training" });
-      toast("Retraining started", {
-        description: `We'll email ${user.email} when "${bot.name}" is ready.`,
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to start retraining";
-      setActionError(msg);
-      toast(msg);
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleUpdate = async (
     updates: Partial<
@@ -190,17 +160,7 @@ export default function BotDetails() {
                 Train Bot
               </Button>
             )}
-            {bot.status === "ready" && (
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                onClick={handleRetrain}
-                disabled={actionLoading}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Retrain
-              </Button>
-            )}
+            {/* TODO: Retrain button — enable once retrain workflow is implemented */}
           </div>
         </div>
 
@@ -277,15 +237,7 @@ export default function BotDetails() {
           </TabsContent>
 
           <TabsContent value="integration" className="mt-6">
-            {bot.integration_code ? (
-              <IntegrationCode code={bot.integration_code} botId={bot.id} />
-            ) : (
-              <Alert>
-                <AlertDescription>
-                  Integration code will be available after the bot is created.
-                </AlertDescription>
-              </Alert>
-            )}
+            <IntegrationCode botId={bot.id} />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">

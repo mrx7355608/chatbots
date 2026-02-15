@@ -1,6 +1,5 @@
 export interface WidgetConfig {
   botId: string;
-  position?: "bottom-right" | "bottom-left";
 }
 
 export interface WidgetTheme {

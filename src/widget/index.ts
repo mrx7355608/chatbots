@@ -9,7 +9,7 @@ interface ChatBotGlobal {
 
 const ChatBot: ChatBotGlobal = {
   async init(config: WidgetConfig) {
-    const { botId, position = "bottom-right" } = config;
+    const { botId } = config;
 
     if (!botId) {
       console.error("[ChatBot] botId is required");
@@ -33,7 +33,7 @@ const ChatBot: ChatBotGlobal = {
 
     try {
       const theme = await fetchWidgetConfig(botId);
-      createChat(shadow, botId, theme, position);
+      createChat(shadow, botId, theme);
     } catch (err) {
       console.error("[ChatBot] Failed to initialize:", err);
     }

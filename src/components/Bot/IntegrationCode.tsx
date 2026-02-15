@@ -4,13 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Check, Copy, Info } from "lucide-react";
 
+const WIDGET_URL =
+  import.meta.env.VITE_CHAT_WIDGET_URL ?? "https://yourdomain.com/widget.js";
+
 interface IntegrationCodeProps {
-  code: string;
   botId: string;
 }
 
-export function IntegrationCode({ code, botId }: IntegrationCodeProps) {
+function generateSnippet(botId: string): string {
+  return `<script src="${WIDGET_URL}"></script>
+<script>
+  ChatBot.init({ botId: '${botId}' });
+</script>`;
+}
+
+export function IntegrationCode({ botId }: IntegrationCodeProps) {
   const [copied, setCopied] = useState(false);
+  const code = generateSnippet(botId);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
