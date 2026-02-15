@@ -1,7 +1,17 @@
 export function getStyles(): string {
   return `
     :host {
-      all: initial;
+      display: block !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: visible !important;
+      z-index: 2147483647 !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: none !important;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       line-height: 1.5;
@@ -25,6 +35,7 @@ export function getStyles(): string {
       z-index: 2147483647;
       background-color: var(--cb-header-color, #18181b);
       color: #fff;
+      pointer-events: auto;
     }
     .cb-toggle:hover {
       transform: scale(1.05);
@@ -52,13 +63,13 @@ export function getStyles(): string {
       background: #ffffff;
       opacity: 0;
       transform: translateY(16px) scale(0.95);
-      pointer-events: none;
+      pointer-events: none !important;
       transition: opacity 0.2s, transform 0.2s;
     }
     .cb-window.open {
       opacity: 1;
       transform: translateY(0) scale(1);
-      pointer-events: auto;
+      pointer-events: auto !important;
     }
     .cb-window.bottom-right { bottom: 88px; right: 20px; }
 

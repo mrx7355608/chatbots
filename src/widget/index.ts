@@ -5,6 +5,11 @@ import { getStyles } from "./styles";
 
 console.log("[ChatBot] widget.js loaded");
 
+// Global dedup: prevent multiple script loads from double-initializing
+const _initedBots = ((window as unknown as Record<string, unknown>).__chatbot_inited as Set<string>) ??
+  new Set<string>();
+(window as unknown as Record<string, unknown>).__chatbot_inited = _initedBots;
+
 interface ChatBotGlobal {
   init(config: WidgetConfig): void;
 }
@@ -19,15 +24,23 @@ const ChatBot: ChatBotGlobal = {
       return;
     }
 
-    // Prevent double init
-    if (document.getElementById(`chatbot-widget-${botId}`)) {
+    // Prevent double init (sync flag + DOM check)
+    if (_initedBots.has(botId) || document.getElementById(`chatbot-widget-${botId}`)) {
       console.log("[ChatBot] already initialized, skipping");
       return;
     }
+    _initedBots.add(botId);
 
     // Create container with Shadow DOM
     const container = document.createElement("div");
     container.id = `chatbot-widget-${botId}`;
+    // Inline styles ensure the host is visible regardless of page CSS
+    container.setAttribute("style",
+      "display:block!important;position:fixed!important;top:0!important;left:0!important;" +
+      "width:0!important;height:0!important;overflow:visible!important;" +
+      "z-index:2147483647!important;opacity:1!important;visibility:visible!important;" +
+      "pointer-events:none!important;padding:0!important;margin:0!important;border:none!important;"
+    );
     document.body.appendChild(container);
 
     const shadow = container.attachShadow({ mode: "open" });

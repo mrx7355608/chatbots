@@ -31,7 +31,14 @@ export function createChat(
   toggle.className = "cb-toggle bottom-right";
   toggle.innerHTML = CHAT_ICON;
   toggle.setAttribute("aria-label", "Open chat");
+  // Critical inline styles as fallback in case Shadow DOM stylesheet fails (e.g. CSP)
+  toggle.style.cssText =
+    "position:fixed;bottom:20px;right:20px;width:56px;height:56px;z-index:2147483647;" +
+    "border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;" +
+    `justify-content:center;background:${theme.headerColor || '#18181b'};color:#fff;` +
+    "box-shadow:0 4px 12px rgba(0,0,0,0.15);pointer-events:auto;";
   root.appendChild(toggle);
+  console.log("[ChatBot] toggle button created and appended to shadow root");
 
   // Chat window
   const win = document.createElement("div");
