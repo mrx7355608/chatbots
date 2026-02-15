@@ -3,6 +3,8 @@ import { fetchWidgetConfig } from "./api";
 import { createChat } from "./chat";
 import { getStyles } from "./styles";
 
+console.log("[ChatBot] widget.js loaded");
+
 interface ChatBotGlobal {
   init(config: WidgetConfig): void;
 }
@@ -10,6 +12,7 @@ interface ChatBotGlobal {
 const ChatBot: ChatBotGlobal = {
   async init(config: WidgetConfig) {
     const { botId } = config;
+    console.log("[ChatBot] init called with botId:", botId);
 
     if (!botId) {
       console.error("[ChatBot] botId is required");
@@ -17,7 +20,10 @@ const ChatBot: ChatBotGlobal = {
     }
 
     // Prevent double init
-    if (document.getElementById(`chatbot-widget-${botId}`)) return;
+    if (document.getElementById(`chatbot-widget-${botId}`)) {
+      console.log("[ChatBot] already initialized, skipping");
+      return;
+    }
 
     // Create container with Shadow DOM
     const container = document.createElement("div");
@@ -32,7 +38,9 @@ const ChatBot: ChatBotGlobal = {
     shadow.appendChild(style);
 
     try {
+      console.log("[ChatBot] fetching widget config...");
       const theme = await fetchWidgetConfig(botId);
+      console.log("[ChatBot] config loaded, creating chat UI");
       createChat(shadow, botId, theme);
     } catch (err) {
       console.error("[ChatBot] Failed to initialize:", err);
@@ -43,15 +51,24 @@ const ChatBot: ChatBotGlobal = {
 // Expose globally
 (window as unknown as Record<string, unknown>).ChatBot = ChatBot;
 
-// Auto-initialize from data-bot-id attribute on the script tag
-const scriptTag =
-  document.currentScript ||
-  document.querySelector("script[data-bot-id]");
-if (scriptTag) {
-  const botId = scriptTag.getAttribute("data-bot-id");
-  if (botId) {
-    ChatBot.init({ botId });
+// Auto-initialize: check script URL for ?botId=, data-bot-id attr, or global config
+(function autoInit() {
+  const scripts = document.querySelectorAll<HTMLScriptElement>("script[src*='widget.js']");
+  console.log("[ChatBot] auto-init: found", scripts.length, "widget script(s)");
+
+  for (const s of scripts) {
+    console.log("[ChatBot] checking script src:", s.src);
+    const url = new URL(s.src, location.href);
+    const botId = url.searchParams.get("botId");
+    if (botId) { console.log("[ChatBot] found botId in URL:", botId); ChatBot.init({ botId }); return; }
+    const attr = s.getAttribute("data-bot-id");
+    if (attr) { console.log("[ChatBot] found data-bot-id:", attr); ChatBot.init({ botId: attr }); return; }
   }
-}
+
+  const cfg = (window as unknown as Record<string, unknown>).ChatBotConfig as WidgetConfig | undefined;
+  if (cfg?.botId) { console.log("[ChatBot] found global config:", cfg.botId); ChatBot.init(cfg); return; }
+
+  console.warn("[ChatBot] no botId found — widget not initialized");
+})();
 
 export default ChatBot;

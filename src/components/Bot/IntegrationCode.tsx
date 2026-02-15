@@ -12,7 +12,7 @@ interface IntegrationCodeProps {
 }
 
 function generateSnippet(botId: string): string {
-  return `<script src="${WIDGET_URL}" data-bot-id="${botId}"></script>`;
+  return `<script src="${WIDGET_URL}?botId=${botId}"></script>`;
 }
 
 export function IntegrationCode({ botId }: IntegrationCodeProps) {
