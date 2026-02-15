@@ -44,9 +44,11 @@ const ChatBot: ChatBotGlobal = {
 (window as unknown as Record<string, unknown>).ChatBot = ChatBot;
 
 // Auto-initialize from data-bot-id attribute on the script tag
-const currentScript = document.currentScript;
-if (currentScript) {
-  const botId = currentScript.getAttribute("data-bot-id");
+const scriptTag =
+  document.currentScript ||
+  document.querySelector("script[data-bot-id]");
+if (scriptTag) {
+  const botId = scriptTag.getAttribute("data-bot-id");
   if (botId) {
     ChatBot.init({ botId });
   }
