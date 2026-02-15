@@ -109,9 +109,7 @@ export default function Integration() {
           </Card>
         </div>
 
-        {bot.integration_code && (
-          <IntegrationCode code={bot.integration_code} botId={bot.id} />
-        )}
+        <IntegrationCode botId={bot.id} />
       </div>
     </DashboardLayout>
   );
